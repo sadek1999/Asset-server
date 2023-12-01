@@ -9,7 +9,9 @@ const port = process.env.PORT || 8080;
 
 
 // middle wair
-app.use(cors())
+app.use(cors({
+  origin:['https://stiff-rock.surge.sh/','http://localhost:5173']
+}))
 app.use(express.json())
 
 
@@ -78,11 +80,13 @@ async function run() {
 
     app.patch('/employee/:id',async(req,res)=>{
       const id=req.params.id;
-      
+       const email=req.body.hr;
+      //  console.log(email)
       const query={_id:new ObjectId(id)}
       const update={
         $set:{
-          haired:"true"
+          haired:"true",
+          hr:email
         }
       }
       const result=await emCollection.updateOne(query,update)
@@ -91,10 +95,12 @@ async function run() {
 
     app.patch('/employee/remove/:id',async(req,res)=>{
       const id=req.params.id;
+      
       const query={_id:new ObjectId(id)}
       const update={
         $set:{
-          haired:"false"
+          haired:"false",
+          hr:''
         }
       }
       const result=await emCollection.updateOne(query,update)
