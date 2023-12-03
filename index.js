@@ -10,7 +10,7 @@ const port = process.env.PORT || 8080;
 
 // middle wair
 app.use(cors({
-  origin:['https://stiff-rock.surge.sh/','http://localhost:5173']
+  origin:['http://localhost:5173',"https://irate-match.surge.sh"]
 }))
 app.use(express.json())
 
@@ -37,6 +37,7 @@ async function run() {
     const assetCollection = client.db('AssetDB').collection('assets')
     const userCollection=client.db('AssetDB').collection('users')
     const emCollection=client.db('AssetDB').collection('employees')
+    const reqCollection=client.db('AssetDB').collection('request')
 
     // Api for user-----------------------------------
     // -------------------------------------------------
@@ -59,13 +60,18 @@ async function run() {
     // api for employees.-----------------------------------------
     app.post('/employee',async(req,res)=>{
       const query=req.body;
+      console.log(query)
       const result=await emCollection.insertOne(query)
       res.send(result)
     })
     app.get('/employee',async(req,res)=>{
       let query={};
-      if(req.query?.company){
-        query={company:req.query.company}
+      if(req.query?.email){
+        query={email:req.query.email}
+      }
+      if(req.query?.role){
+        query={role:req.query.role}
+        // console.log(query)
       }
       if(req.query?.haired){
         
@@ -75,6 +81,7 @@ async function run() {
       // console.log(query)
 
       const result=await emCollection.find(query).toArray()
+      // console.log(result)
       res.send(result)
     })
 
@@ -137,12 +144,45 @@ async function run() {
       res.send(result)
     })
 
+    // request API -------------------------------------------------------------
+
+    app.post('/request',async(req,res)=>{
+      const query=req.body;
+      const result=await reqCollection.insertOne(query);
+      res.send(result)
+
+    })
+
+    app.get('/request',async(req,res)=>{
+      let query={}
+      if(req.query?.state){
+        query={state:req.query.state}
+        
+      }
+      // console.log(query)
+      const result=await reqCollection.find(query).toArray()
+      res.send(result)
+    })
+
+    app.put('/request/:id',async(req,res)=>{
+      const id=req.params.id;
+     console.log(req.body)
+      const query={_id:new ObjectId(id)}
+      const update={
+        $set:{
+          state:req.body.do
+        }
+      }
+      const result=await reqCollection.updateOne(query,update)
+      res.send(result)
+    })
 
 
-    await client.connect();
+
+    // await client.connect();
     
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
+    // await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
     // Ensures that the client will close when you finish/error
